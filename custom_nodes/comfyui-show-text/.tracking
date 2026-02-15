@@ -1,0 +1,8 @@
+.github/workflows/publish.yml
+LICENSE
+README.md
+__init__.py
+imgs/showtext.png
+pyproject.toml
+showtext.py
+web/showtext.js

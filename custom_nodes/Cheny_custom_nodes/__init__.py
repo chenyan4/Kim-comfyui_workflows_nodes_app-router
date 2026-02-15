@@ -1,0 +1,33 @@
+# __init__.py
+from .image_center_paste import NODE_CLASS_MAPPINGS as paste_mappings, NODE_DISPLAY_NAME_MAPPINGS as paste_display_mappings
+from .yolov8_person_detect import NODE_CLASS_MAPPINGS as yolo_mappings, NODE_DISPLAY_NAME_MAPPINGS as yolo_display_mappings
+from .yolov8_person_nomask import NODE_CLASS_MAPPINGS as yolo_nomask_mappings,NODE_DISPLAY_NAME_MAPPINGS as yolo_nomask_display_mappings
+from .mask_solid_area import NODE_CLASS_MAPPINGS as mask_solid_area_mappings,NODE_DISPLAY_NAME_MAPPINGS as mask_solid_area_display_mappings
+from .half_person_check import NODE_CLASS_MAPPINGS as half_person_check_mappings,NODE_DISPLAY_NAME_MAPPINGS as half_person_check_display_mappings
+from .yolov8_detect import NODE_CLASS_MAPPINGS as yolov8_detect_mappings,NODE_DISPLAY_NAME_MAPPINGS as yolov8_detect_display_mappings
+from .find_crop_box import NODE_CLASS_MAPPINGS as find_crop_box_mappings,NODE_DISPLAY_NAME_MAPPINGS as find_crop_box_display_mappings
+from .reduce_mask_by_ratio import NODE_CLASS_MAPPINGS as reduce_mask_by_ratio_mappings,NODE_DISPLAY_NAME_MAPPINGS as reduce_mask_by_ratio_display_mappings
+
+# 合并所有节点的映射
+NODE_CLASS_MAPPINGS = {}
+NODE_CLASS_MAPPINGS.update(paste_mappings)
+NODE_CLASS_MAPPINGS.update(yolo_mappings)
+NODE_CLASS_MAPPINGS.update(yolo_nomask_mappings)
+NODE_CLASS_MAPPINGS.update(mask_solid_area_mappings)
+NODE_CLASS_MAPPINGS.update(half_person_check_mappings)
+NODE_CLASS_MAPPINGS.update(yolov8_detect_mappings)
+NODE_CLASS_MAPPINGS.update(find_crop_box_mappings)
+NODE_CLASS_MAPPINGS.update(reduce_mask_by_ratio_mappings)
+
+NODE_DISPLAY_NAME_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS.update(paste_display_mappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(yolo_display_mappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(yolo_nomask_display_mappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(mask_solid_area_display_mappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(half_person_check_display_mappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(yolov8_detect_display_mappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(find_crop_box_display_mappings)
+NODE_DISPLAY_NAME_MAPPINGS.update(reduce_mask_by_ratio_display_mappings)
+# 必须导出这两个变量
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

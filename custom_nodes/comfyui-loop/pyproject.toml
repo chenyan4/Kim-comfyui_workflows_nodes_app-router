@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-loop"
+description = "ComfyUI nodes for interactive image crop and paste and loop any file. Provides four specialized nodes for cropping, pasting, looping, and saving various file types with preview capabilities."
+version = "0.2.0"
+license = {file = "LICENSE"}
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/Hullabalo/ComfyUI-Loop"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "hullabaloo"
+DisplayName = "ComfyUI-Loop"
+Icon = "https://github.com/Hullabalo/ComfyUI-Loop/raw/main/ComfyUI-Loop.png"
