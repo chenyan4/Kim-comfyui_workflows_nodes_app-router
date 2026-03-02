@@ -1,0 +1,28 @@
+[project]
+name = "comfyui-ak-pack"
+publisher = "akawana2"
+version = "3.01"
+frontend_version = "3.01"
+description = "Utility tools. Index Multiple, CLIP Multiple, Pipe, Getter, Setter."
+readme = "README.md"
+requires-python = ">=3.10"
+
+
+packages = ["nodes"]
+
+[project.urls]
+Repository = "https://github.com/akawana/ComfyUI-AK-Pack"
+Documentation = "https://github.com/akawana/ComfyUI-AK-Pack/wiki"
+"Bug Tracker" = "https://github.com/akawana/ComfyUI-AK-Pack/issues"
+
+[tool.comfy_node]
+package = "nodes"
+publisher = "akawana2"
+display_name = "AK Pack"
+summary = "Index Multiple, CLIP Multiple, Pipe, Getter, Setter."
+tags = ["utility", "list", "group", "clip"]
+
+[tool.comfy]
+PublisherId = "akawana2" # TODO (fill in Publisher ID from Comfy Registry Website).
+DisplayName = "AK Pack" # Display name for the Custom Node. Can be changed later.
+Icon = "https://raw.githubusercontent.com/akawana/ComfyUI-Utils-extra/refs/heads/main/icon.jpg"
