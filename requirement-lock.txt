@@ -1,0 +1,27 @@
+# Stable lock for coexistence: ComfyUI-SDPose-OOD + comfyui-rmbg
+# Python env: /data/envs/Cheny
+#
+# Install with:
+#   /data/envs/Cheny/bin/pip install -r /data/chenyan/comfyui/requirement-lock.txt
+#
+# Notes:
+# - Use headless OpenCV build to avoid cv2 binary conflicts.
+# - Keep NumPy/Numba/PyMatting aligned to avoid runtime import/ABI issues.
+# - Keep CPU onnxruntime in this lock (avoids some GPU-runtime segfault combos).
+
+torch==2.9.1+cu128
+torchvision==0.24.1+cu128
+xformers==0.0.33.post2
+
+mmengine==0.10.7
+
+numpy==2.3.5
+numba==0.64.0
+llvmlite==0.46.0
+
+opencv-contrib-python-headless==4.10.0.84
+
+pymatting==1.1.14
+rembg==2.0.68
+
+onnxruntime==1.23.2

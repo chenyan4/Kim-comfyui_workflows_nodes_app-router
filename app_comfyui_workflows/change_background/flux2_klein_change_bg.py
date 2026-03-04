@@ -68,7 +68,7 @@ def find_path(name: str, path: str = None) -> str:
         path = os.getcwd()
     if name in os.listdir(path):
         path_name = os.path.join(path, name)
-        print(f"{name} found: {path_name}")
+        pass
         return path_name
     parent_directory = os.path.dirname(path)
     if parent_directory == path:
@@ -85,7 +85,7 @@ def add_comfyui_directory_to_sys_path() -> None:
         comfyui_path = find_path("comfyui")
     if comfyui_path is not None and os.path.isdir(comfyui_path):
         sys.path.append(comfyui_path)
-        print(f"'{comfyui_path}' added to sys.path")
+        pass
 
 
 def add_extra_model_paths() -> None:
@@ -95,16 +95,14 @@ def add_extra_model_paths() -> None:
     try:
         from main import load_extra_path_config
     except ImportError:
-        print(
-            "Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead."
-        )
+        pass
         from utils.extra_config import load_extra_path_config
 
     extra_model_paths = find_path("extra_model_paths.yaml")
     if extra_model_paths is not None:
         load_extra_path_config(extra_model_paths)
     else:
-        print("Could not find the extra_model_paths config file.")
+        pass
 
 
 add_comfyui_directory_to_sys_path()
@@ -112,6 +110,9 @@ add_extra_model_paths()
 
 
 def import_custom_nodes() -> None:
+    import os
+    if os.environ.get("COMFYUI_NODES_LOADED") == "1":
+        return
     """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
 
     This function sets up a new asyncio event loop, initializes the PromptServer,
@@ -129,6 +130,7 @@ def import_custom_nodes() -> None:
     server_instance = server.PromptServer(loop)
     execution.PromptQueue(server_instance)
     asyncio.run(init_extra_nodes())
+    os.environ["COMFYUI_NODES_LOADED"] = "1"
 
 
 import_custom_nodes()
@@ -158,7 +160,7 @@ layerutility_imagescalebyaspectratio_v2_node = NODE_CLASS_MAPPINGS["LayerUtility
 imagemaskscaleasv2_node = NODE_CLASS_MAPPINGS["ImageMaskScaleAsV2"]()
 
 
-class flux2_cb:
+class flux2_klein_change_bg:
     def __init__(self):
         # 预加载模型，风格对齐 qwen_change_bg / flux2_klein_change_bg
         self.cliploader_88 = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
@@ -473,9 +475,9 @@ class flux2_cb:
         return tensor2pil(get_value_at_index(imagemaskscaleasv2_37, 0))
 
 
-if __name__ == "__main__":
-    flux2_cb_processor = flux2_cb()
-    init_image = Image.open("../my_images/0-0.jpg")
-    bg_image = Image.open("../my_images/0-1.jpg")
-    res_image = flux2_cb_processor.forward(init_image, bg_image)
-    res_image.save("../my_images/0-2_res_flux.jpg")
+# if __name__ == "__main__":
+#     flux2_cb_processor = fflux2_klein_change_bg()
+#     init_image = Image.open("../my_images/0-0.jpg")
+#     bg_image = Image.open("../my_images/0-1.jpg")
+#     res_image = flux2_cb_processor.forward(init_image, bg_image)
+#     res_image.save("../my_images/0-2_res_flux.jpg")

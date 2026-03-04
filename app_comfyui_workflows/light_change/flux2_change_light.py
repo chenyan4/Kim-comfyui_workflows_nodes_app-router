@@ -1,14 +1,12 @@
 import os
 import random
 import sys
-from typing import Sequence, Mapping, Any, Union
+from typing import Sequence, Mapping, Any, Union, Tuple
 import torch
 import numpy as np
 from PIL import Image
 import types
 from functools import wraps
-
-# no depedn on comfyui and custom_nodes
 
 
 def support_pil_image(original_method):
@@ -68,7 +66,7 @@ def find_path(name: str, path: str = None) -> str:
         path = os.getcwd()
     if name in os.listdir(path):
         path_name = os.path.join(path, name)
-        print(f"{name} found: {path_name}")
+        pass
         return path_name
     parent_directory = os.path.dirname(path)
     if parent_directory == path:
@@ -84,8 +82,9 @@ def add_comfyui_directory_to_sys_path() -> None:
     if not os.path.exists(comfyui_path):
         comfyui_path = find_path("comfyui")
     if comfyui_path is not None and os.path.isdir(comfyui_path):
-        sys.path.append(comfyui_path)
-        print(f"'{comfyui_path}' added to sys.path")
+        if comfyui_path not in sys.path:
+            sys.path.append(comfyui_path)
+        pass
 
 
 def add_extra_model_paths() -> None:
@@ -95,16 +94,14 @@ def add_extra_model_paths() -> None:
     try:
         from main import load_extra_path_config
     except ImportError:
-        print(
-            "Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead."
-        )
+        pass
         from utils.extra_config import load_extra_path_config
 
     extra_model_paths = find_path("extra_model_paths.yaml")
     if extra_model_paths is not None:
         load_extra_path_config(extra_model_paths)
     else:
-        print("Could not find the extra_model_paths config file.")
+        pass
 
 
 add_comfyui_directory_to_sys_path()
@@ -112,6 +109,9 @@ add_extra_model_paths()
 
 
 def import_custom_nodes() -> None:
+    import os
+    if os.environ.get("COMFYUI_NODES_LOADED") == "1":
+        return
     """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
 
     This function sets up a new asyncio event loop, initializes the PromptServer,
@@ -129,72 +129,105 @@ def import_custom_nodes() -> None:
     server_instance = server.PromptServer(loop)
     execution.PromptQueue(server_instance)
     asyncio.run(init_extra_nodes())
+    os.environ["COMFYUI_NODES_LOADED"] = "1"
 
 
 import_custom_nodes()
 from nodes import NODE_CLASS_MAPPINGS
 
-# 节点实例（与 flux2_klein_one_cb 风格一致，模块级缓存）
-cliptextencode_node = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
-emptylatentimage_node = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
-fluxguidance_node = NODE_CLASS_MAPPINGS["FluxGuidance"]()
-conditioningzeroout_node = NODE_CLASS_MAPPINGS["ConditioningZeroOut"]()
+# 节点实例（与 everything_image 风格一致，模块级缓存）
+text_multiline_node = NODE_CLASS_MAPPINGS["Text Multiline"]()
+imagescalebyaspectratiov2_node = NODE_CLASS_MAPPINGS["ImageScaleByAspectRatioV2"]()
+painterfluximageedit_node = NODE_CLASS_MAPPINGS["PainterFluxImageEdit"]()
 ksampler_node = NODE_CLASS_MAPPINGS["KSampler"]()
 vaedecode_node = NODE_CLASS_MAPPINGS["VAEDecode"]()
+getimagesize_node = NODE_CLASS_MAPPINGS["GetImageSize+"]()
+imagescale_node = NODE_CLASS_MAPPINGS["ImageScale"]()
 
 
-class Zimage_text2img:
+class flux2_change_light:
     def __init__(self):
-        # 预加载模型，风格对齐 flux2_klein_one_cb
-        self.vaeloader_86 = NODE_CLASS_MAPPINGS["VAELoader"]().load_vae(vae_name="ae.safetensors")
-        self.cliploader_88 = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
-            clip_name="qwen_3_4b.safetensors",
-            type="stable_diffusion",
+        self.name = self.__class__.__name__
+        
+        # 预加载模型，风格对齐
+        self.vaeloader_32 = NODE_CLASS_MAPPINGS["VAELoader"]().load_vae(vae_name="flux2-vae.safetensors")
+        self.cliploader_34 = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
+            clip_name="split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors",
+            type="flux2",
             device="default",
         )
-        self.unetloader_89 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
-            unet_name="z_image_turbo_bf16.safetensors", weight_dtype="default"
+        self.unetloader_35 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
+            unet_name="flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
+        )
+        
+        self.loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
+        self.loadimage.load_image = types.MethodType(
+            support_pil_image(self.loadimage.load_image.__func__),
+            self.loadimage,
         )
 
     @torch.inference_mode()
-    def forward(self, prompt: str, width: int = 1080, height: int = 1920) -> Image.Image:
+    def forward(self, image,prompt):
         """
-        文本 prompt -> ZImage 文生图后的 PIL.Image
+        前向处理流程，接收输入请求和时间戳 -> 输出结果字典
         """
-        cliptextencode_5 = cliptextencode_node.encode(
-            text=prompt,
-            clip=get_value_at_index(self.cliploader_88, 0),
+
+        text_multiline_52 = text_multiline_node.text_multiline(text=prompt)
+        loadimage_48 = self.loadimage.load_image(image=image)
+
+        imagescalebyaspectratiov2_47 = imagescalebyaspectratiov2_node.image_scale_by_aspect_ratio(
+            aspect_ratio="original",
+            proportional_width=1,
+            proportional_height=1,
+            fit="letterbox",
+            method="lanczos",
+            round_to_multiple="8",
+            scale_to_side="longest",
+            scale_to_length=1536,
+            background_color="#000000",
+            image=get_value_at_index(loadimage_48, 0),
         )
-        emptylatentimage_7 = emptylatentimage_node.generate(
-            width=width, height=height, batch_size=1
+
+        painterfluximageedit_39 = painterfluximageedit_node.encode(
+            prompt=get_value_at_index(text_multiline_52, 0),
+            width=get_value_at_index(imagescalebyaspectratiov2_47, 3),
+            height=get_value_at_index(imagescalebyaspectratiov2_47, 4),
+            clip=get_value_at_index(self.cliploader_34, 0),
+            vae=get_value_at_index(self.vaeloader_32, 0),
+            image1=get_value_at_index(imagescalebyaspectratiov2_47, 0),
         )
-        fluxguidance_57 = fluxguidance_node.EXECUTE_NORMALIZED(
-            guidance=50, conditioning=get_value_at_index(cliptextencode_5, 0)
-        )
-        conditioningzeroout_6 = conditioningzeroout_node.zero_out(
-            conditioning=get_value_at_index(cliptextencode_5, 0)
-        )
-        ksampler_4 = ksampler_node.sample(
+
+        ksampler_42 = ksampler_node.sample(
             seed=random.randint(1, 2**64),
-            steps=10,
+            steps=4,
             cfg=1,
             sampler_name="euler",
             scheduler="simple",
             denoise=1,
-            model=get_value_at_index(self.unetloader_89, 0),
-            positive=get_value_at_index(fluxguidance_57, 0),
-            negative=get_value_at_index(conditioningzeroout_6, 0),
-            latent_image=get_value_at_index(emptylatentimage_7, 0),
+            model=get_value_at_index(self.unetloader_35, 0),
+            positive=get_value_at_index(painterfluximageedit_39, 0),
+            negative=get_value_at_index(painterfluximageedit_39, 1),
+            latent_image=get_value_at_index(painterfluximageedit_39, 2),
         )
-        vaedecode_8 = vaedecode_node.decode(
-            samples=get_value_at_index(ksampler_4, 0),
-            vae=get_value_at_index(self.vaeloader_86, 0),
+
+        vaedecode_44 = vaedecode_node.decode(
+            samples=get_value_at_index(ksampler_42, 0),
+            vae=get_value_at_index(self.vaeloader_32, 0),
         )
-        return tensor2pil(get_value_at_index(vaedecode_8, 0))
 
+        getimagesize_49 = getimagesize_node.execute(
+            image=get_value_at_index(loadimage_48, 0)
+        )
 
-# if __name__ == "__main__":
-#     text2img_processor = Zimage_text2img()
-#     prompt = "外貌：​ 一位年轻的东亚女性，面容清秀..."
-#     res_image = text2img_processor.forward(prompt, width=1080, height=1920)
-#     res_image.save("../my_images/zimage_text2img_res.jpg")
+        imagescale_50 = imagescale_node.upscale(
+            upscale_method="nearest-exact",
+            width=get_value_at_index(getimagesize_49, 0),
+            height=get_value_at_index(getimagesize_49, 1),
+            crop="disabled",
+            image=get_value_at_index(vaedecode_44, 0),
+        )
+
+        res_image = tensor2pil(get_value_at_index(imagescale_50, 0))
+        
+        return res_image
+

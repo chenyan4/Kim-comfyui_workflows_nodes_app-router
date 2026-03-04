@@ -8,8 +8,6 @@ from PIL import Image
 import types
 from functools import wraps
 
-# no depedn on comfyui and custom_nodes
-
 
 def support_pil_image(original_method):
     @wraps(original_method)
@@ -28,10 +26,12 @@ def pil2tensor(image):
     new_tensor = torch.tensor(img_array)
     return new_tensor.unsqueeze(0)
 
+
 def tensor2pil(image):
     if len(image.shape) < 3:
         image = image.unsqueeze(0)
     return Image.fromarray((image[0].cpu().numpy() * 255).astype(np.uint8))
+
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
@@ -65,20 +65,15 @@ def find_path(name: str, path: str = None) -> str:
     if path is None:
         path = os.getcwd()
 
-    # Check if the current directory contains the name
     if name in os.listdir(path):
         path_name = os.path.join(path, name)
-        print(f"{name} found: {path_name}")
         return path_name
 
-    # Get the parent directory
     parent_directory = os.path.dirname(path)
 
-    # If the parent directory is the same as the current directory, we've reached the root and stop the search
     if parent_directory == path:
         return None
 
-    # Recursively call the function with the parent directory
     return find_path(name, parent_directory)
 
 
@@ -86,12 +81,12 @@ def add_comfyui_directory_to_sys_path() -> None:
     """
     Add 'ComfyUI' to the sys.path
     """
-    comfyui_path = 'data/chenyan/comfyui'
+    comfyui_path = '/data/chenyan/comfyui'
     if not os.path.exists(comfyui_path):
         comfyui_path = find_path("comfyui")
     if comfyui_path is not None and os.path.isdir(comfyui_path):
-        sys.path.append(comfyui_path)
-    print(f"'{comfyui_path}' added to sys.path")
+        if comfyui_path not in sys.path:
+            sys.path.append(comfyui_path)
 
 
 def add_extra_model_paths() -> None:
@@ -101,17 +96,12 @@ def add_extra_model_paths() -> None:
     try:
         from main import load_extra_path_config
     except ImportError:
-        print(
-            "Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead."
-        )
         from utils.extra_config import load_extra_path_config
 
     extra_model_paths = find_path("extra_model_paths.yaml")
 
     if extra_model_paths is not None:
         load_extra_path_config(extra_model_paths)
-    else:
-        print("Could not find the extra_model_paths config file.")
 
 
 add_comfyui_directory_to_sys_path()
@@ -119,6 +109,9 @@ add_extra_model_paths()
 
 
 def import_custom_nodes() -> None:
+    import os
+    if os.environ.get("COMFYUI_NODES_LOADED") == "1":
+        return
     """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
 
     This function sets up a new asyncio event loop, initializes the PromptServer,
@@ -131,22 +124,20 @@ def import_custom_nodes() -> None:
     sys.path.insert(0, find_path("comfyui"))
     import server
 
-    # Creating a new event loop and setting it as the default loop
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    # Creating an instance of PromptServer with the loop
     server_instance = server.PromptServer(loop)
     execution.PromptQueue(server_instance)
 
-    # Initializing custom nodes
     asyncio.run(init_extra_nodes())
+    os.environ["COMFYUI_NODES_LOADED"] = "1"
 
 
 import_custom_nodes()
 from nodes import NODE_CLASS_MAPPINGS
 
-facedetector=NODE_CLASS_MAPPINGS["FaceDetector"]()
+yolov8_detect = NODE_CLASS_MAPPINGS["yolov8_detect"]()
 instantidmodelloader = NODE_CLASS_MAPPINGS["InstantIDModelLoader"]()
 instantidfaceanalysis = NODE_CLASS_MAPPINGS["InstantIDFaceAnalysis"]()
 checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
@@ -216,12 +207,11 @@ class ChangeFace:
         loadimage_502 = self.loadimage.load_image(image=init_image)
         loadimage_503 = self.loadimage.load_image(image=userdefined_image)
 
-        facedetector_488 = facedetector.call(
-            fit="all",
-            expand_rate=0.5,
-            only_one=True,
-            invert=False,
-            input_image=get_value_at_index(loadimage_502, 0),
+        yolov8_detect_531 = yolov8_detect.yolo_detect(
+            yolo_model="face_yolov8n-seg2_60.pt",
+            mask_merge="all",
+            conf_threshold=0.25,
+            image=get_value_at_index(loadimage_502, 0),
         )
 
         focuscropultra_505 = focuscropultra.crop_by_mask_v2(
@@ -240,7 +230,7 @@ class ChangeFace:
             expand=0,
             blur_radius=0,
             image=get_value_at_index(loadimage_502, 0),
-            mask=get_value_at_index(facedetector_488, 1),
+            mask=get_value_at_index(yolov8_detect_531, 0),
         )
 
         emptyimagepro_489 = emptyimagepro.generate(
@@ -251,7 +241,7 @@ class ChangeFace:
 
         layermask_personmaskultra_506 = layermask_personmaskultra.person_mask_ultra(
             face=True,
-            hair=True,
+            hair=False,
             body=False,
             clothes=False,
             accessories=False,
@@ -327,12 +317,11 @@ class ChangeFace:
             clip=get_value_at_index(self.checkpointloadersimple_504, 1),
         )
 
-        facedetector_432 = facedetector.call(
-            fit="all",
-            expand_rate=0.5,
-            only_one=True,
-            invert=False,
-            input_image=get_value_at_index(loadimage_503, 0),
+        yolov8_detect_535 = yolov8_detect.yolo_detect(
+            yolo_model="face_yolov8n-seg2_60.pt",
+            mask_merge="all",
+            conf_threshold=0.25,
+            image=get_value_at_index(loadimage_503, 0),
         )
 
         focuscropultra_462 = focuscropultra.crop_by_mask_v2(
@@ -351,12 +340,16 @@ class ChangeFace:
             expand=0,
             blur_radius=0,
             image=get_value_at_index(loadimage_503, 0),
-            mask=get_value_at_index(facedetector_432, 1),
+            mask=get_value_at_index(yolov8_detect_535, 0),
         )
+
+        crop_box = get_value_at_index(focuscropultra_462, 2)
+        if crop_box is None:
+            raise ValueError("目标图片中未检测到人脸，请上传包含清晰人脸的图片")
 
         colormatch_463 = colormatch.colormatch(
             method="mkl",
-            strength=1,
+            strength=0.7,
             multithread=True,
             image_ref=get_value_at_index(loadimage_503, 0),
             image_target=get_value_at_index(focuscropultra_462, 3),
@@ -399,13 +392,13 @@ class ChangeFace:
         )
 
         growmask_523 = growmask.EXECUTE_NORMALIZED(
-            expand=40,
+            expand=30,
             tapered_corners=False,
             mask=get_value_at_index(imagemaskscaleas_516, 1),
         )
 
         maskblur_522 = maskblur.execute(
-            amount=60, device="auto", mask=get_value_at_index(growmask_523, 0)
+            amount=30, device="auto", mask=get_value_at_index(growmask_523, 0)
         )
 
         inpaintmodelconditioning_393 = inpaintmodelconditioning.encode(
@@ -537,6 +530,9 @@ class ChangeFace:
                 )
             )
 
+            composite_x = max(0, get_value_at_index(layerutility_cropboxresolve_433, 0))
+            composite_y = max(0, get_value_at_index(layerutility_cropboxresolve_433, 1))
+
             growmask_514 = growmask.EXECUTE_NORMALIZED(
                 expand=40,
                 tapered_corners=False,
@@ -548,8 +544,8 @@ class ChangeFace:
             )
 
             imagecompositemasked_478 = imagecompositemasked.EXECUTE_NORMALIZED(
-                x=get_value_at_index(layerutility_cropboxresolve_433, 0),
-                y=get_value_at_index(layerutility_cropboxresolve_433, 1),
+                x=composite_x,
+                y=composite_y,
                 resize_source=False,
                 destination=get_value_at_index(loadimage_503, 0),
                 source=get_value_at_index(imageresize_420, 0),
@@ -558,5 +554,6 @@ class ChangeFace:
 
         pil_image = tensor2pil(get_value_at_index(imagecompositemasked_478, 0))
         return pil_image
+
 
 
