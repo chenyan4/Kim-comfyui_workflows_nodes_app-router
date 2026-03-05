@@ -554,6 +554,3 @@ class ChangeFace:
 
         pil_image = tensor2pil(get_value_at_index(imagecompositemasked_478, 0))
         return pil_image
-
-
-

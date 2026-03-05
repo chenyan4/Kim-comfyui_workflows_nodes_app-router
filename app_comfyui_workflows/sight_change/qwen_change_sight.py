@@ -66,7 +66,6 @@ def find_path(name: str, path: str = None) -> str:
         path = os.getcwd()
     if name in os.listdir(path):
         path_name = os.path.join(path, name)
-        pass
         return path_name
     parent_directory = os.path.dirname(path)
     if parent_directory == path:
@@ -84,7 +83,6 @@ def add_comfyui_directory_to_sys_path() -> None:
     if comfyui_path is not None and os.path.isdir(comfyui_path):
         if comfyui_path not in sys.path:
             sys.path.append(comfyui_path)
-        pass
 
 
 def add_extra_model_paths() -> None:
@@ -94,14 +92,11 @@ def add_extra_model_paths() -> None:
     try:
         from main import load_extra_path_config
     except ImportError:
-        pass
         from utils.extra_config import load_extra_path_config
 
     extra_model_paths = find_path("extra_model_paths.yaml")
     if extra_model_paths is not None:
         load_extra_path_config(extra_model_paths)
-    else:
-        pass
 
 
 add_comfyui_directory_to_sys_path()
@@ -137,30 +132,44 @@ from nodes import NODE_CLASS_MAPPINGS
 
 # 节点实例（模块级缓存）
 text_multiline_node = NODE_CLASS_MAPPINGS["Text Multiline"]()
-imagetomask_node = NODE_CLASS_MAPPINGS["ImageToMask"]()
-imagescalebyaspectratiov2_node = NODE_CLASS_MAPPINGS["ImageScaleByAspectRatioV2"]()
+cliptextencode_node = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
+textencodeqwenimageeditplus_node = NODE_CLASS_MAPPINGS["TextEncodeQwenImageEditPlus"]()
 getimagesize_plus_node = NODE_CLASS_MAPPINGS["GetImageSize+"]()
-layermask_maskgrow_node = NODE_CLASS_MAPPINGS["LayerMask: MaskGrow"]()
-painterfluximageedit_node = NODE_CLASS_MAPPINGS["PainterFluxImageEdit"]()
-lanpaint_ksampler_node = NODE_CLASS_MAPPINGS["LanPaint_KSampler"]()
+emptylatentimage_node = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
+ksampler_node = NODE_CLASS_MAPPINGS["KSampler"]()
 vaedecode_node = NODE_CLASS_MAPPINGS["VAEDecode"]()
-imagescale_node = NODE_CLASS_MAPPINGS["ImageScale"]()
 
 
-class flux2_clear_person:
+class qwen_change_sight:
     def __init__(self):
         self.name = self.__class__.__name__
 
-        # 预加载模型，风格对齐
-        self.unetloader_46 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
-            unet_name="flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
+        # 预加载模型
+        self.unetloader_21 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
+            unet_name="qwen/qwen_image_edit_2511_bf16.safetensors",
+            weight_dtype="default",
         )
-        self.cliploader_49 = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
-            clip_name="split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors",
-            type="flux2",
+
+        loraloadermodelonly = NODE_CLASS_MAPPINGS["LoraLoaderModelOnly"]()
+        self.loraloadermodelonly_22 = loraloadermodelonly.load_lora_model_only(
+            lora_name="Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors",
+            strength_model=1,
+            model=get_value_at_index(self.unetloader_21, 0),
+        )
+
+        self.loraloadermodelonly_23 = loraloadermodelonly.load_lora_model_only(
+            lora_name="qwen-image-edit-2511-multiple-angles-lora.safetensors",
+            strength_model=1,
+            model=get_value_at_index(self.loraloadermodelonly_22, 0),
+        )
+
+        self.cliploader_24 = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
+            clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
+            type="qwen_image",
             device="default",
         )
-        self.vaeloader_50 = NODE_CLASS_MAPPINGS["VAELoader"]().load_vae(vae_name="flux2-vae.safetensors")
+
+        self.vaeloader_25 = NODE_CLASS_MAPPINGS["VAELoader"]().load_vae(vae_name="qwen_image_vae.safetensors")
 
         self.loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
         self.loadimage.load_image = types.MethodType(
@@ -169,91 +178,55 @@ class flux2_clear_person:
         )
 
     @torch.inference_mode()
-    def forward(self, image,mask_image):
+    def forward(self, image, prompt):
         """
-        前向处理流程，接收输入请求和时间戳 -> 输出结果字典
+        前向处理流程，接收输入图像和提示词 -> 输出结果 PIL.Image
         """
-        prompt = "消除图1中的人物"
+        loadimage_30 = self.loadimage.load_image(image=image)
 
-        text_multiline_60 = text_multiline_node.text_multiline(text=prompt)
-        loadimage_24 = self.loadimage.load_image(image=image)
-        loadimage_61 = self.loadimage.load_image(image=mask_image)
+        text_multiline_33 = text_multiline_node.text_multiline(text=prompt)
 
-        imagetomask_63 = imagetomask_node.EXECUTE_NORMALIZED(
-            channel="red", image=get_value_at_index(loadimage_61, 0)
+        cliptextencode_36 = cliptextencode_node.encode(
+            text="泛黄，AI感，不真实，丑陋，油腻的皮肤，异常的肢体，不协调的肢体",
+            clip=get_value_at_index(self.cliploader_24, 0),
         )
 
-        imagescalebyaspectratiov2_26 = imagescalebyaspectratiov2_node.image_scale_by_aspect_ratio(
-            aspect_ratio="original",
-            proportional_width=1,
-            proportional_height=1,
-            fit="letterbox",
-            method="lanczos",
-            round_to_multiple="8",
-            scale_to_side="longest",
-            scale_to_length=1536,
-            background_color="#000000",
-            image=get_value_at_index(loadimage_24, 0),
-            mask=get_value_at_index(imagetomask_63, 0),
+        textencodeqwenimageeditplus_29 = textencodeqwenimageeditplus_node.EXECUTE_NORMALIZED(
+            prompt=get_value_at_index(text_multiline_33, 0),
+            clip=get_value_at_index(self.cliploader_24, 0),
+            vae=get_value_at_index(self.vaeloader_25, 0),
+            image1=get_value_at_index(loadimage_30, 0),
         )
 
-        getimagesize_59 = getimagesize_plus_node.execute(
-            image=get_value_at_index(imagescalebyaspectratiov2_26, 0)
+        getimagesize_39 = getimagesize_plus_node.execute(
+            image=get_value_at_index(loadimage_30, 0)
         )
 
-        layermask_maskgrow_47 = layermask_maskgrow_node.mask_grow(
-            invert_mask=False,
-            grow=30,
-            blur=0,
-            mask=get_value_at_index(imagescalebyaspectratiov2_26, 1),
+        emptylatentimage_38 = emptylatentimage_node.generate(
+            width=get_value_at_index(getimagesize_39, 0),
+            height=get_value_at_index(getimagesize_39, 1),
+            batch_size=1,
         )
 
-        painterfluximageedit_51 = painterfluximageedit_node.encode(
-            prompt=get_value_at_index(text_multiline_60, 0),
-            width=get_value_at_index(getimagesize_59, 0),
-            height=get_value_at_index(getimagesize_59, 1),
-            clip=get_value_at_index(self.cliploader_49, 0),
-            vae=get_value_at_index(self.vaeloader_50, 0),
-            image1=get_value_at_index(imagescalebyaspectratiov2_26, 0),
-            image1_mask=get_value_at_index(layermask_maskgrow_47, 0),
-        )
-
-        getimagesize_36 = getimagesize_plus_node.execute(
-            image=get_value_at_index(loadimage_24, 0)
-        )
-
-        lanpaint_ksampler_53 = lanpaint_ksampler_node.sample(
+        ksampler_34 = ksampler_node.sample(
             seed=random.randint(1, 2**64),
-            steps=4,
+            steps=8,
             cfg=1,
             sampler_name="euler",
-            scheduler="simple",
+            scheduler="beta",
             denoise=1,
-            LanPaint_NumSteps=3,
-            LanPaint_PromptMode="Image First",
-            LanPaint_Info="LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!",
-            Inpainting_mode="🖼️ Image Inpainting",
-            model=get_value_at_index(self.unetloader_46, 0),
-            positive=get_value_at_index(painterfluximageedit_51, 0),
-            negative=get_value_at_index(painterfluximageedit_51, 1),
-            latent_image=get_value_at_index(painterfluximageedit_51, 2),
+            model=get_value_at_index(self.loraloadermodelonly_23, 0),
+            positive=get_value_at_index(textencodeqwenimageeditplus_29, 0),
+            negative=get_value_at_index(cliptextencode_36, 0),
+            latent_image=get_value_at_index(emptylatentimage_38, 0),
         )
 
-        vaedecode_54 = vaedecode_node.decode(
-            samples=get_value_at_index(lanpaint_ksampler_53, 0),
-            vae=get_value_at_index(self.vaeloader_50, 0),
+        vaedecode_40 = vaedecode_node.decode(
+            samples=get_value_at_index(ksampler_34, 0),
+            vae=get_value_at_index(self.vaeloader_25, 0),
         )
 
-        imagescale_29 = imagescale_node.upscale(
-            upscale_method="nearest-exact",
-            width=get_value_at_index(getimagesize_36, 0),
-            height=get_value_at_index(getimagesize_36, 1),
-            crop="disabled",
-            image=get_value_at_index(vaedecode_54, 0),
-        )
+        res_image = tensor2pil(get_value_at_index(vaedecode_40, 0))
 
-        res_image = tensor2pil(get_value_at_index(imagescale_29, 0))
-        
         return res_image
-
 
