@@ -240,7 +240,7 @@ class WanVacePersonChangeMix:
 
         load_ref = self.loadimage.load_image(image=image_1)
         vhs_loadvideo_out = vhs_loadvideo_node.load_video(
-            video=video_path,
+            video=video_url,
             force_rate=int(fps),
             custom_width=get_value_at_index(width_const, 0),
             custom_height=get_value_at_index(height_const, 0),
