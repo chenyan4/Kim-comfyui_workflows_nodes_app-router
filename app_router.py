@@ -61,7 +61,7 @@ def pil_to_base64(pil_img, fmt="PNG"):
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
-INPUT_VIDEO_DIR = "/data/chenyan/comfyui/input_video"
+INPUT_VIDEO_DIR = os.environ.get("INPUT_VIDEO_DIR", os.path.join(_script_dir, "input_video"))
 
 
 def save_base64_video_to_path(b64_video: str) -> str:
