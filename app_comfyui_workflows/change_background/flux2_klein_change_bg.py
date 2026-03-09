@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union
 import torch
 import numpy as np
@@ -472,7 +473,58 @@ class flux2_klein_change_bg:
             scale_as=get_value_at_index(imagecompositemasked_19, 0),
             image=get_value_at_index(vaedecode_36, 0),
         )
-        return tensor2pil(get_value_at_index(imagemaskscaleasv2_37, 0))
+        res = tensor2pil(get_value_at_index(imagemaskscaleasv2_37, 0))
+
+        # 尽量释放中间大 tensor（依赖作用域自动 GC）
+        try:
+            del (
+                cr_text_13,
+                cr_text_48,
+                loadimage_78,
+                loadimage_79,
+                getimagesize_55,
+                getimagesize_69,
+                impactcompare_64,
+                layerutility_numbercalculator_60,
+                imagescalebyaspectratiov2_67,
+                imagescalebyaspectratiov2_65,
+                easy_ifelse_73,
+                rmbg_62,
+                imagecompositemasked_57,
+                imagecrop_112,
+                yolov8_person_nomask_90,
+                clothessegment_91,
+                maskcomposite_92,
+                focuscropultra_94,
+                getimagesize_5,
+                painterfluximageedit_44,
+                layerutility_cropboxresolve_100,
+                lanpaint_ksampler_49,
+                vaedecode_4,
+                jwimageresize_23,
+                imagecompositemasked_19,
+                yolov8_person_nomask_30,
+                clothessegment_28,
+                maskcomposite_29,
+                invertmask_27,
+                layerutility_imagescalebyaspectratio_v2_26,
+                getimagesize_12,
+                painterfluximageedit_46,
+                lanpaint_ksampler_51,
+                vaedecode_36,
+                imagemaskscaleasv2_37,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+        return res
 
 
 # if __name__ == "__main__":

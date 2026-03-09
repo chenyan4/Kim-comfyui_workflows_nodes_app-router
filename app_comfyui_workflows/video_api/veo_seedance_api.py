@@ -2,6 +2,7 @@ import os
 import sys
 import tempfile
 import types
+import gc
 from functools import wraps
 from typing import Sequence, Mapping, Any, Union
 import numpy as np
@@ -169,86 +170,98 @@ class VeoSeedanceAPI:
         返回 (i2v_output, t2v_output)，均为对应节点 run 的返回值（可用 get_value_at_index(..., 0) 取视频等）。
         """
 
-        if image_1 is None:
-            kim_video_t2v_out = kim_video_t2v_node.run(
-            api_key=api_key,
-            model_select=model_select,
-            prompt=prompt,
-            aspect_ratio=aspect_ratio,
-            resolution=resolution,
-            duration=duration,
-            )
+        try:
+            if image_1 is None:
+                kim_video_t2v_out = kim_video_t2v_node.run(
+                    api_key=api_key,
+                    model_select=model_select,
+                    prompt=prompt,
+                    aspect_ratio=aspect_ratio,
+                    resolution=resolution,
+                    duration=duration,
+                )
+                return get_value_at_index(kim_video_t2v_out, 0)
 
-            return get_value_at_index(kim_video_t2v_out, 0)
+            if image_2 is None:
+                loadimage_1 = self.loadimage.load_image(image=image_1)
+                scaled_1 = layerutility_scale_node.image_scale_by_aspect_ratio(
+                    aspect_ratio="original",
+                    proportional_width=1,
+                    proportional_height=1,
+                    fit="letterbox",
+                    method="lanczos",
+                    round_to_multiple="8",
+                    scale_to_side="longest",
+                    scale_to_length=1024,
+                    background_color="#000000",
+                    image=get_value_at_index(loadimage_1, 0),
+                )
 
-        if image_2 is None:
+                kim_video_i2v_out = kim_video_i2v_node.run(
+                    api_key=api_key,
+                    model_select=model_select,
+                    prompt=prompt,
+                    aspect_ratio=aspect_ratio,
+                    resolution=resolution,
+                    duration=duration,
+                    image_1=get_value_at_index(scaled_1, 0),
+                )
+
+                return get_value_at_index(kim_video_i2v_out, 0)
+
             loadimage_1 = self.loadimage.load_image(image=image_1)
+            loadimage_2 = self.loadimage.load_image(image=image_2)
+
             scaled_1 = layerutility_scale_node.image_scale_by_aspect_ratio(
-            aspect_ratio="original",
-            proportional_width=1,
-            proportional_height=1,
-            fit="letterbox",
-            method="lanczos",
-            round_to_multiple="8",
-            scale_to_side="longest",
-            scale_to_length=1024,
-            background_color="#000000",
-            image=get_value_at_index(loadimage_1, 0),
+                aspect_ratio="original",
+                proportional_width=1,
+                proportional_height=1,
+                fit="letterbox",
+                method="lanczos",
+                round_to_multiple="8",
+                scale_to_side="longest",
+                scale_to_length=1024,
+                background_color="#000000",
+                image=get_value_at_index(loadimage_1, 0),
+            )
+            scaled_2 = layerutility_scale_node.image_scale_by_aspect_ratio(
+                aspect_ratio="original",
+                proportional_width=1,
+                proportional_height=1,
+                fit="letterbox",
+                method="lanczos",
+                round_to_multiple="8",
+                scale_to_side="longest",
+                scale_to_length=1024,
+                background_color="#000000",
+                image=get_value_at_index(loadimage_2, 0),
             )
 
             kim_video_i2v_out = kim_video_i2v_node.run(
-            api_key=api_key,
-            model_select=model_select,
-            prompt=prompt,
-            aspect_ratio=aspect_ratio,
-            resolution=resolution,
-            duration=duration,
-            image_1=get_value_at_index(scaled_1, 0),
+                api_key=api_key,
+                model_select=model_select,
+                prompt=prompt,
+                aspect_ratio=aspect_ratio,
+                resolution=resolution,
+                duration=duration,
+                image_1=get_value_at_index(scaled_1, 0),
+                image_2=get_value_at_index(scaled_2, 0),
             )
 
             return get_value_at_index(kim_video_i2v_out, 0)
-
-        loadimage_1 = self.loadimage.load_image(image=image_1)
-        loadimage_2 = self.loadimage.load_image(image=image_2)
-
-
-        scaled_1 = layerutility_scale_node.image_scale_by_aspect_ratio(
-            aspect_ratio="original",
-            proportional_width=1,
-            proportional_height=1,
-            fit="letterbox",
-            method="lanczos",
-            round_to_multiple="8",
-            scale_to_side="longest",
-            scale_to_length=1024,
-            background_color="#000000",
-            image=get_value_at_index(loadimage_1, 0),
-        )
-        scaled_2 = layerutility_scale_node.image_scale_by_aspect_ratio(
-            aspect_ratio="original",
-            proportional_width=1,
-            proportional_height=1,
-            fit="letterbox",
-            method="lanczos",
-            round_to_multiple="8",
-            scale_to_side="longest",
-            scale_to_length=1024,
-            background_color="#000000",
-            image=get_value_at_index(loadimage_2, 0),
-        )
-
-        kim_video_i2v_out = kim_video_i2v_node.run(
-            api_key=api_key,
-            model_select=model_select,
-            prompt=prompt,
-            aspect_ratio=aspect_ratio,
-            resolution=resolution,
-            duration=duration,
-            image_1=get_value_at_index(scaled_1, 0),
-            image_2=get_value_at_index(scaled_2, 0),
-        )
-
-        return get_value_at_index(kim_video_i2v_out, 0)
+        finally:
+            # 尽量释放中间结果所占用的显存/内存（Veo 调用主要是远端，但本地也有 tensor）
+            try:
+                del locals()["image_1"]
+                del locals()["image_2"]
+            except Exception:
+                pass
+            try:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            except Exception:
+                pass
         
 
 

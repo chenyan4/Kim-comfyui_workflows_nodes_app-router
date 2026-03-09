@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union, Tuple
 import torch
 import numpy as np
@@ -228,6 +229,27 @@ class flux2_change_light:
         )
 
         res_image = tensor2pil(get_value_at_index(imagescale_50, 0))
-        
+
+        try:
+            del (
+                text_multiline_52,
+                loadimage_48,
+                imagescalebyaspectratiov2_47,
+                painterfluximageedit_39,
+                ksampler_42,
+                vaedecode_44,
+                getimagesize_49,
+                imagescale_50,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
         return res_image
 

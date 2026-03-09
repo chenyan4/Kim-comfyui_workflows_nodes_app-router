@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union
 import torch
 import numpy as np
@@ -578,7 +579,61 @@ class qwen_change_bg:
         )
 
         # 返回最终结果（经第二阶段 Qwen 编辑后的图）
-        pil_image=tensor2pil(get_value_at_index(imagemaskscaleasv2_81, 0))
+        pil_image = tensor2pil(get_value_at_index(imagemaskscaleasv2_81, 0))
+
+        # 尽量释放中间大 tensor（依赖作用域自动 GC）
+        try:
+            del (
+                loadimage_98,
+                loadimage_99,
+                getimagesize_10,
+                getimagesize_33,
+                impactcompare_24,
+                layerutility_numbercalculator_20,
+                imagescalebyaspectratiov2_31,
+                imagescalebyaspectratiov2_25,
+                easy_ifelse_60,
+                rmbg_22,
+                imagecompositemasked_16,
+                imagecrop_17,
+                yolov8_person_nomask_112,
+                clothessegment_113,
+                maskcomposite_114,
+                focuscropultra_116,
+                vaeencode_57,
+                text_multiline_71,
+                layerutility_cropboxresolve_122,
+                text_multiline_107,
+                textencodeqwenimageeditplus_1,
+                conditioningzeroout_34,
+                setlatentnoisemask_56,
+                ksampler_254,
+                vaedecode_51,
+                jwimageresize_87,
+                imagecompositemasked_128,
+                yolov8_person_nomask_96,
+                clothessegment_140,
+                maskcomposite_97,
+                invertmask_92,
+                layerutility_imagescalebyaspectratio_v2_91,
+                vaeencode_85,
+                textencodeqwenimageeditplus_74,
+                conditioningzeroout_69,
+                setlatentnoisemask_86,
+                ksampler_255,
+                vaedecode_76,
+                imagemaskscaleasv2_81,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
         return pil_image
 
 # if __name__=="__main__":

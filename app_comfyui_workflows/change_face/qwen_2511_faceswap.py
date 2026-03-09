@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union
 import torch
 import numpy as np
@@ -476,7 +477,52 @@ class qwen_2511_faceswap:
             croped_mask=get_value_at_index(layermask_maskgrow_116, 0),
         )
     
-        return tensor2pil(get_value_at_index(focuscroprestore_30, 0))
+        res = tensor2pil(get_value_at_index(focuscroprestore_30, 0))
+
+        try:
+            del (
+                loadimage_68,
+                loadimage_259,
+                text_multiline_41,
+                yolov8_detect_152,
+                focuscropultra_252,
+                vaeencode_91,
+                modelsamplingauraflow_2,
+                cfgnorm_3,
+                yolov8_detect_153,
+                focuscropultra_137,
+                emptyimagepro_143,
+                layermask_personmaskultra_139,
+                facesegment_141,
+                maskcomposite_142,
+                growmask_144,
+                imagecompositemasked_145,
+                textencodeqwenimageeditplus_39,
+                conditioningzeroout_12,
+                imagemaskscaleas_15,
+                layermask_personmaskultra_249,
+                maskcomposite_255,
+                layermask_maskgrow_257,
+                cropbymaskv2_24,
+                dwpreprocessor_25,
+                lanpaint_ksampler_95,
+                vaedecode_31,
+                colormatch_127,
+                imagemaskscaleas_247,
+                layermask_maskgrow_116,
+                focuscroprestore_30,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+        return res
 
 
 # if __name__ == "__main__":

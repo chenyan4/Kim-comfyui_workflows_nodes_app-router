@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union
 import torch
 import numpy as np
@@ -276,7 +277,39 @@ class flux2_klein_one_cb:
             samples=get_value_at_index(ksampler_108, 0),
             vae=get_value_at_index(self.vaeloader_86, 0),
         )
-        return tensor2pil(get_value_at_index(vaedecode_89, 0))
+        res = tensor2pil(get_value_at_index(vaedecode_89, 0))
+
+        try:
+            del (
+                cr_text_92,
+                loadimage_49,
+                loadimage_50,
+                getimagesize_9,
+                getimagesize_29,
+                impactcompare_20,
+                layerutility_numbercalculator_16,
+                imagescalebyaspectratiov2_27,
+                imagescalebyaspectratiov2_21,
+                easy_ifelse_47,
+                rmbg_18,
+                imagecompositemasked_12,
+                imagecrop_13,
+                getimagesize_90,
+                painterfluximageedit_107,
+                ksampler_108,
+                vaedecode_89,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+        return res
 
 
 # if __name__ == "__main__":

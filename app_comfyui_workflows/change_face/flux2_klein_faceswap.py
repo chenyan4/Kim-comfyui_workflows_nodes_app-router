@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union
 import torch
 import numpy as np
@@ -393,7 +394,45 @@ class flux2_klein_faceswap:
             original_size=get_value_at_index(focuscropultra_126, 5),
             croped_mask=get_value_at_index(imagemaskscaleas_133, 1),
         )
-        return tensor2pil(get_value_at_index(focuscroprestore_107, 0))
+        res = tensor2pil(get_value_at_index(focuscroprestore_107, 0))
+
+        try:
+            del (
+                cr_text_20,
+                loadimage_94,
+                loadimage_95,
+                yolov8_detect_152,
+                focuscropultra_126,
+                getimagesize_109,
+                yolov8_detect_153,
+                focuscropultra_90,
+                emptyimagepro_78,
+                layermask_personmaskultra_79,
+                facesegment_85,
+                maskcomposite_89,
+                growmask_74,
+                imagecompositemasked_92,
+                layermask_personmaskultra_127,
+                maskcomposite_128,
+                layermask_maskgrow_132,
+                painterfluximageedit_35,
+                lanpaint_ksampler_138,
+                vaedecode_37,
+                colormatch_103,
+                imagemaskscaleas_133,
+                focuscroprestore_107,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+        return res
 
 
 

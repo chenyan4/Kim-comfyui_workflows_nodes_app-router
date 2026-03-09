@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union, Tuple
 import torch
 import numpy as np
@@ -257,7 +258,31 @@ class qwen_change_light:
         )
 
         res_image = tensor2pil(get_value_at_index(imagescale_17, 0))
-        
+
+        try:
+            del (
+                text_multiline_12,
+                loadimage_37,
+                imagescalebyaspectratiov2_18,
+                textencodeqwenimageeditplus_2,
+                conditioningzeroout_3,
+                getimagesize_9,
+                emptylatentimage_10,
+                ksampler_11,
+                vaedecode_13,
+                getimagesize_15,
+                imagescale_17,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
         return res_image
 
 

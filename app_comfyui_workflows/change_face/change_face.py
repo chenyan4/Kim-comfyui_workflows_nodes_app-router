@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union
 import torch
 import numpy as np
@@ -553,4 +554,63 @@ class ChangeFace:
             )
 
         pil_image = tensor2pil(get_value_at_index(imagecompositemasked_478, 0))
+
+        # 尽量释放中间结果所占用的显存/内存
+        try:
+            del (
+                loadimage_502,
+                loadimage_503,
+                yolov8_detect_531,
+                focuscropultra_505,
+                emptyimagepro_489,
+                layermask_personmaskultra_506,
+                facesegment_507,
+                maskcomposite_491,
+                growmask_492,
+                imagecomposite_496,
+                cliptextencode_412,
+                cr_text_498,
+                cliptextencode_408,
+                yolov8_detect_535,
+                focuscropultra_462,
+                crop_box,
+                colormatch_463,
+                applyinstantid_395,
+                layermask_personmaskultra_510,
+                imagemaskscaleas_516,
+                growmask_523,
+                maskblur_522,
+                inpaintmodelconditioning_393,
+                pulidmodelloader_416,
+                pulidevacliploader_417,
+                pulidinsightfaceloader_418,
+                applypulid_396,
+                rescalecfg_397,
+                ipadapterunifiedloaderfaceid_446,
+                ipadapterfaceid_451,
+                ksampler_414,
+                vaedecode_448,
+                inpaintmodelconditioning_443,
+                ksampler_401,
+                easy_imagesize_422,
+                vaedecode_449,
+                colormatch_423,
+                imageresize_420,
+                layerutility_cropboxresolve_433,
+                composite_x,
+                composite_y,
+                growmask_514,
+                maskblur_515,
+                imagecompositemasked_478,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
         return pil_image

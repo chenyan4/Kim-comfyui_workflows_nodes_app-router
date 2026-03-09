@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union, Tuple
 import torch
 import numpy as np
@@ -253,7 +254,32 @@ class flux2_clear_person:
         )
 
         res_image = tensor2pil(get_value_at_index(imagescale_29, 0))
-        
+
+        try:
+            del (
+                text_multiline_60,
+                loadimage_24,
+                loadimage_61,
+                imagetomask_63,
+                imagescalebyaspectratiov2_26,
+                getimagesize_59,
+                layermask_maskgrow_47,
+                painterfluximageedit_51,
+                getimagesize_36,
+                lanpaint_ksampler_53,
+                vaedecode_54,
+                imagescale_29,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
         return res_image
 
 

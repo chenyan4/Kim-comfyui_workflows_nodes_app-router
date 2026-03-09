@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import gc
 from typing import Sequence, Mapping, Any, Union
 import torch
 import numpy as np
@@ -302,7 +303,40 @@ class qwen_2509_one_cb:
             samples=get_value_at_index(ksampler_74, 0),
             vae=get_value_at_index(self.vaeloader_86, 0),
         )
-        return tensor2pil(get_value_at_index(vaedecode_73, 0))
+        res = tensor2pil(get_value_at_index(vaedecode_73, 0))
+
+        try:
+            del (
+                loadimage_49,
+                loadimage_50,
+                getimagesize_9,
+                getimagesize_29,
+                impactcompare_20,
+                layerutility_numbercalculator_16,
+                imagescalebyaspectratiov2_27,
+                imagescalebyaspectratiov2_21,
+                easy_ifelse_47,
+                rmbg_18,
+                imagecompositemasked_12,
+                imagecrop_13,
+                vaeencode_77,
+                text_multiline_84,
+                textencodeqwenimageeditplus_62,
+                conditioningzeroout_71,
+                ksampler_74,
+                vaedecode_73,
+            )
+        except Exception:
+            pass
+
+        try:
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+        return res
 
 
 # if __name__ == "__main__":

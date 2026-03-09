@@ -3,6 +3,7 @@ import random
 import sys
 import tempfile
 import types
+import gc
 from functools import wraps
 from typing import Sequence, Mapping, Any, Union
 import numpy as np
@@ -127,6 +128,34 @@ def import_custom_nodes() -> None:
 
 import_custom_nodes()
 from nodes import NODE_CLASS_MAPPINGS
+
+
+def cleanup_memory():
+    """
+    清理一次 Python 对象和 CUDA 显存，并尽量让 ComfyUI 释放未使用的模型。
+    在每个大 workflow 结束后调用。
+    """
+    try:
+        import comfy.model_management as model_management  # type: ignore
+    except Exception:
+        model_management = None
+
+    try:
+        gc.collect()
+    except Exception:
+        pass
+
+    try:
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:
+        pass
+
+    if model_management is not None:
+        try:
+            model_management.unload_all_models()
+        except Exception:
+            pass
 
 # 节点实例（与 wan_vace_t2v 风格一致，模块级缓存）
 floatconstant_node = NODE_CLASS_MAPPINGS["FloatConstant"]()
@@ -414,6 +443,28 @@ class WanVaceI2V:
             unique_id=6209073526905002479,
         )
         video = get_value_at_index(vhs_videocombine_out, 0)[1][-1]
+
+        # 尽量释放中间结果所占用的显存/内存
+        try:
+            del (
+                steps_val,
+                num_frames_val,
+                fps_val,
+                loadimage_out,
+                scaled_image,
+                vacestarttoendframe_out,
+                getimagesizeandcount_out,
+                wanvideovaceencode_out,
+                wanvideotextencode_out,
+                wanvideosampler_high,
+                wanvideosampler_low,
+                wanvideodecode_out,
+                vhs_videocombine_out,
+            )
+        except Exception:
+            pass
+
+        cleanup_memory()
         return video
 
 
