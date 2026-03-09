@@ -170,10 +170,10 @@ class WanVaceI2V:
     def __init__(self):
         # 预加载模型，风格对齐 wan_vace_t2v
         self.vace_high = wanvideovacemodelselect_node.getvacepath(
-            vace_model="VACE/Wan2_2_Fun_VACE_module_A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors"
+            vace_model="Wan2.2_VACE/Wan2_2_Fun_VACE_module_A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors"
         )
         self.vace_low = wanvideovacemodelselect_node.getvacepath(
-            vace_model="VACE/Wan2_2_Fun_VACE_module_A14B_LOW_fp8_e4m3fn_scaled_KJ.safetensors"
+            vace_model="Wan2.2_VACE/Wan2_2_Fun_VACE_module_A14B_LOW_fp8_e4m3fn_scaled_KJ.safetensors"
         )
         self.vae = wanvideovaeloader_node.loadmodel(
             model_name="wan_2.1_vae.safetensors", precision="bf16", use_cpu_cache=True
@@ -225,9 +225,9 @@ class WanVaceI2V:
             tsr_sigma=1,
         )
         self.lora_multi_high = wanvideoloraselectmulti_node.getlorapath(
-            lora_0="lightx2v_elite_it2v_animate_face.safetensors",
+            lora_0="Lightx2v/lightx2v_elite_it2v_animate_face.safetensors",
             strength_0=get_value_at_index(self.stringtofloatlist_84, 0),
-            lora_1="FullDynamic_Ultimate_Fusion_Elite.safetensors",
+            lora_1="Wan22_FunReward/FullDynamic_Ultimate_Fusion_Elite.safetensors",
             strength_1=1,
             lora_2="none",
             strength_2=1,
@@ -239,9 +239,9 @@ class WanVaceI2V:
             merge_loras=False,
         )
         self.lora_multi_low = wanvideoloraselectmulti_node.getlorapath(
-            lora_0="lightx2v_elite_it2v_animate_face.safetensors",
+            lora_0="Lightx2v/lightx2v_elite_it2v_animate_face.safetensors",
             strength_0=1.5,
-            lora_1="FullDynamic_Ultimate_Fusion_Elite.safetensors",
+            lora_1="Wan22_FunReward/FullDynamic_Ultimate_Fusion_Elite.safetensors",
             strength_1=1,
             lora_2="none",
             strength_2=1,
@@ -253,7 +253,7 @@ class WanVaceI2V:
             merge_loras=False,
         )
         model_low_raw = wanvideomodelloader_low_node.loadmodel(
-            model="split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
+            model="Wan2.2/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
             base_precision="fp16_fast",
             quantization="disabled",
             load_device="offload_device",
@@ -270,7 +270,7 @@ class WanVaceI2V:
             lora=get_value_at_index(self.lora_multi_low, 0),
         )
         model_high_raw = wanvideomodelloader_high_node.loadmodel(
-            model="split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
+            model="Wan2.2/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
             base_precision="fp16_fast",
             quantization="disabled",
             load_device="offload_device",

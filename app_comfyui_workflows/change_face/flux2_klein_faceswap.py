@@ -139,7 +139,6 @@ from nodes import NODE_CLASS_MAPPINGS
 # 节点实例（与 flux2_klein_change_bg 风格一致，模块级缓存）
 cr_text_node = NODE_CLASS_MAPPINGS["CR Text"]()
 loadimage_node = NODE_CLASS_MAPPINGS["LoadImage"]()
-facedetector_node = NODE_CLASS_MAPPINGS["FaceDetector"]()
 focuscropultra_node = NODE_CLASS_MAPPINGS["FocusCropUltra"]()
 getimagesize_node = NODE_CLASS_MAPPINGS["GetImageSize+"]()
 emptyimagepro_node = NODE_CLASS_MAPPINGS["EmptyImagePro"]()
@@ -156,19 +155,21 @@ colormatch_node = NODE_CLASS_MAPPINGS["ColorMatch"]()
 imagemaskscaleas_node = NODE_CLASS_MAPPINGS["ImageMaskScaleAs"]()
 focuscroprestore_node = NODE_CLASS_MAPPINGS["FocusCropRestore"]()
 layermask_maskgrow_node = NODE_CLASS_MAPPINGS["LayerMask: MaskGrow"]()
+yolov8_detect = NODE_CLASS_MAPPINGS["yolov8_detect"]()
+
 
 
 class flux2_klein_faceswap:
     def __init__(self):
         # 预加载模型，风格对齐 flux2_klein_change_bg
         self.cliploader = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
-            clip_name="split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors",
+            clip_name="qwen_3_8b_fp8mixed.safetensors",
             type="flux2",
             device="default",
         )
         self.vaeloader = NODE_CLASS_MAPPINGS["VAELoader"]().load_vae(vae_name="flux2-vae.safetensors")
         self.unetloader = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
-            unet_name="flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
+            unet_name="flux/flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
         )
         self.loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
         self.loadimage.load_image = types.MethodType(
@@ -193,12 +194,12 @@ class flux2_klein_faceswap:
         loadimage_94 = self.loadimage.load_image(image=image2)
         loadimage_95 = self.loadimage.load_image(image=image1)
 
-        facedetector_87 = facedetector_node.call(
-            fit="all",
-            expand_rate=0.5,
-            only_one=True,
-            invert=False,
-            input_image=get_value_at_index(loadimage_94, 0),
+
+        yolov8_detect_152 = yolov8_detect.yolo_detect(
+            yolo_model="face_yolov8m-seg_60.pt",
+            mask_merge="all",
+            conf_threshold=0.25,
+            image=get_value_at_index(loadimage_94, 0),
         )
         focuscropultra_126 = focuscropultra_node.crop_by_mask_v2(
             up_keep=0.3,
@@ -216,19 +217,20 @@ class flux2_klein_faceswap:
             expand=0,
             blur_radius=0,
             image=get_value_at_index(loadimage_94, 0),
-            mask=get_value_at_index(facedetector_87, 1),
+            mask=get_value_at_index(yolov8_detect_152, 0),
         )
         getimagesize_109 = getimagesize_node.execute(
             image=get_value_at_index(focuscropultra_126, 3)
         )
 
-        facedetector_77 = facedetector_node.call(
-            fit="all",
-            expand_rate=0.5,
-            only_one=True,
-            invert=False,
-            input_image=get_value_at_index(loadimage_95, 0),
+
+        yolov8_detect_153 = yolov8_detect.yolo_detect(
+            yolo_model="face_yolov8m-seg_60.pt",
+            mask_merge="all",
+            conf_threshold=0.25,
+            image=get_value_at_index(loadimage_95, 0),
         )
+        
         focuscropultra_90 = focuscropultra_node.crop_by_mask_v2(
             up_keep=0.2,
             down_keep=0.1,
@@ -245,7 +247,7 @@ class flux2_klein_faceswap:
             expand=0,
             blur_radius=0,
             image=get_value_at_index(loadimage_95, 0),
-            mask=get_value_at_index(facedetector_77, 1),
+            mask=get_value_at_index(yolov8_detect_153, 0),
         )
         emptyimagepro_78 = emptyimagepro_node.generate(
             batch_size=1,

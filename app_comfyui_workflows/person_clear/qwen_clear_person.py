@@ -175,7 +175,7 @@ class qwen_clear_person:
         )
 
         self.loraloadermodelonly_71 = loraloadermodelonly.load_lora_model_only(
-            lora_name="大熊溶图.safetensors",
+            lora_name="qwen/大熊溶图.safetensors",
             strength_model=1,
             model=get_value_at_index(self.cfgnorm_88, 0),
         )

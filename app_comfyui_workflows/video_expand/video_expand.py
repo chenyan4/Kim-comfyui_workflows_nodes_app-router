@@ -172,10 +172,10 @@ class VideoExpand:
             block_swap_debug=False,
         )
         self.vace_high = wanvideovacemodelselect_node.getvacepath(
-            vace_model="VACE/Wan2_2_Fun_VACE_module_A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors"
-        )
+            vace_model="Wan2.2_VACE/Wan2_2_Fun_VACE_module_A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors"
+        )   
         self.vace_low = wanvideovacemodelselect_node.getvacepath(
-            vace_model="VACE/Wan2_2_Fun_VACE_module_A14B_LOW_fp8_e4m3fn_scaled_KJ.safetensors"
+            vace_model="Wan2.2_VACE/Wan2_2_Fun_VACE_module_A14B_LOW_fp8_e4m3fn_scaled_KJ.safetensors"
         )
         self.vae = wanvideovaeloader_node.loadmodel(
             model_name="wan_2.1_vae.safetensors", precision="bf16", use_cpu_cache=False
@@ -203,7 +203,7 @@ class VideoExpand:
         self.lora_low = wanvideoloraselectmulti_node.getlorapath(
             lora_0="Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
             strength_0=1,
-            lora_1="LoRAs/Wan22_FunReward/Wan2.2-Fun-A14B-InP-LOW-HPS2.1_resized_dynamic_avg_rank_15_bf16.safetensors",
+            lora_1="Wan22_FunReward/Wan2.2-Fun-A14B-InP-LOW-HPS2.1_resized_dynamic_avg_rank_15_bf16.safetensors",
             strength_1=0.5000000000000001,
             lora_2="none",
             strength_2=1,
@@ -217,7 +217,7 @@ class VideoExpand:
         self.lora_high = wanvideoloraselectmulti_node.getlorapath(
             lora_0="Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
             strength_0=1,
-            lora_1="LoRAs/Wan22_FunReward/Wan2.2-Fun-A14B-InP-HIGH-MPS_resized_dynamic_avg_rank_21_bf16.safetensors",
+            lora_1="Wan22_FunReward/Wan2.2-Fun-A14B-InP-HIGH-MPS_resized_dynamic_avg_rank_21_bf16.safetensors",
             strength_1=0.5000000000000001,
             lora_2="none",
             strength_2=1,
@@ -229,7 +229,7 @@ class VideoExpand:
             merge_loras=False,
         )
         model_low_raw = wanvideomodelloader_low_node.loadmodel(
-            model="split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
+            model="Wan2.2/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
             base_precision="fp16_fast",
             quantization="fp8_e4m3fn_scaled",
             load_device="offload_device",
@@ -244,7 +244,7 @@ class VideoExpand:
             block_swap_args=get_value_at_index(self.blockswap_args, 0),
         )
         model_high_raw = wanvideomodelloader_high_node.loadmodel(
-            model="split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
+            model="Wan2.2/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
             base_precision="fp16_fast",
             quantization="fp8_e4m3fn_scaled",
             load_device="offload_device",

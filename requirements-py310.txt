@@ -1,0 +1,46 @@
+# 适用于 Python 3.10 的依赖（部分版本与 requirement-lock 略有差异）
+# 核心 ComfyUI 相关
+comfyui-frontend-package==1.37.11
+comfyui-workflow-templates==0.8.27
+comfyui-embedded-docs==0.4.0
+comfy-kitchen==0.2.7
+
+# PyTorch
+torch>=2.0,<2.10
+torchsde==0.2.6
+torchvision
+torchaudio
+
+# 数值与推理（numpy 2.3.x 需 Python 3.11+，3.10 用 2.2.x）
+numpy>=2.0,<2.3
+einops==0.8.1
+transformers==4.57.3
+tokenizers==0.22.1
+sentencepiece==0.2.1
+safetensors==0.7.0
+
+# 网络与异步
+aiohttp==3.13.2
+yarl==1.22.0
+requests==2.32.5
+
+# 图像与媒体
+Pillow>=10.0
+av==16.0.1
+PyYAML==6.0.3
+
+# 工具与数据库
+scipy>=1.10
+tqdm>=4.67
+psutil>=7.0
+alembic==1.17.2
+SQLAlchemy==2.0.46
+
+# app_router.py (Flask API)
+Flask==3.1.2
+
+# 可选
+kornia>=0.7
+spandrel>=0.4
+pydantic>=2.0
+pydantic-settings>=2.0

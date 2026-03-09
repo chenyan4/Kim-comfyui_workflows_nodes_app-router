@@ -135,10 +135,10 @@ class WanVaceT2V:
     def __init__(self):
         # 预加载模型，风格对齐 Zimage_text2img
         self.vace_high = wanvideovacemodelselect_node.getvacepath(
-            vace_model="VACE/Wan2_2_Fun_VACE_module_A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors"
+            vace_model="Wan2.2_VACE/Wan2_2_Fun_VACE_module_A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors"
         )
         self.vace_low = wanvideovacemodelselect_node.getvacepath(
-            vace_model="VACE/Wan2_2_Fun_VACE_module_A14B_LOW_fp8_e4m3fn_scaled_KJ.safetensors"
+            vace_model="Wan2.2_VACE/Wan2_2_Fun_VACE_module_A14B_LOW_fp8_e4m3fn_scaled_KJ.safetensors"
         )
         self.lora_high = wanvideoloraselect_node.getlorapath(
             lora="Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
@@ -173,7 +173,7 @@ class WanVaceT2V:
             model_name="wan_2.1_vae.safetensors", precision="bf16", use_cpu_cache=True
         )
         self.model_high = wanvideomodelloader_high_node.loadmodel(
-            model="split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
+            model="Wan2.2/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
             base_precision="fp16_fast",
             quantization="disabled",
             load_device="offload_device",
@@ -184,7 +184,7 @@ class WanVaceT2V:
             extra_model=get_value_at_index(self.vace_high, 0),
         )
         self.model_low = wanvideomodelloader_low_node.loadmodel(
-            model="split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
+            model="Wan2.2/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
             base_precision="fp16_fast",
             quantization="disabled",
             load_device="offload_device",

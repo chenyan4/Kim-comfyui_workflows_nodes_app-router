@@ -222,9 +222,7 @@ class qwen_change_bg:
             type="stable_diffusion",
             device="default",
         )
-        self.unetloadergguf_100 = unetloadergguf_node.load_unet(
-            unet_name="Qwen-Image-Edit-2509-Q8_0.gguf"
-        )
+        
 
         # 支持 PIL.Image 的 LoadImage 节点
         self.loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()

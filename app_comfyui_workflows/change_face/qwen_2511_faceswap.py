@@ -160,7 +160,6 @@ unetloadergguf_node = NODE_CLASS_MAPPINGS["UnetLoaderGGUF"]()
 modelsamplingauraflow_node = NODE_CLASS_MAPPINGS["ModelSamplingAuraFlow"]()
 cfgnorm_node = NODE_CLASS_MAPPINGS["CFGNorm"]()
 text_multiline_node = NODE_CLASS_MAPPINGS["Text Multiline"]()
-facedetector_node = NODE_CLASS_MAPPINGS["FaceDetector"]()
 focuscropultra_node = NODE_CLASS_MAPPINGS["FocusCropUltra"]()
 vaeencode_node = NODE_CLASS_MAPPINGS["VAEEncode"]()
 emptyimagepro_node = NODE_CLASS_MAPPINGS["EmptyImagePro"]()
@@ -183,6 +182,7 @@ setlatentnoisemask_node = NODE_CLASS_MAPPINGS["SetLatentNoiseMask"]()
 layerutility_cropboxresolve_node = NODE_CLASS_MAPPINGS["LayerUtility: CropBoxResolve"]()
 simplemath_node = NODE_CLASS_MAPPINGS["SimpleMath+"]()
 jwimageresize_node = NODE_CLASS_MAPPINGS["JWImageResize"]()
+yolov8_detect = NODE_CLASS_MAPPINGS["yolov8_detect"]()
 
 
 class qwen_2511_faceswap:
@@ -193,7 +193,7 @@ class qwen_2511_faceswap:
             weight_dtype="default",
         )
         self.loraloadermodelonly_1 = loraloadermodelonly_node.load_lora_model_only(
-            lora_name="Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors",
+            lora_name="qwen/Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors",
             strength_model=1,
             model=get_value_at_index(self.unetloader_43, 0),
         )
@@ -203,11 +203,9 @@ class qwen_2511_faceswap:
             device="default",
         )
         self.vaeloader_6 = vaeloader_node.load_vae(vae_name="qwen_image_vae.safetensors")
-        self.unetloadergguf_134 = unetloadergguf_node.load_unet(
-            unet_name="Qwen-Image-Edit-2509-Q8_0.gguf"
-        )
+        
         self.loraloadermodelonly_151 = loraloadermodelonly_node.load_lora_model_only(
-            lora_name="qwen_F2P_lora.safetensors",
+            lora_name="qwen/qwen_F2P_lora.safetensors",
             strength_model=0.7,
             model=get_value_at_index(self.loraloadermodelonly_1, 0),
         )
@@ -233,13 +231,14 @@ class qwen_2511_faceswap:
             text="面部替换:把第一张图片中人物的面部换成第二张图片中人物的面部特征"
         )
 
-        facedetector_250 = facedetector_node.call(
-            fit="all",
-            expand_rate=0.5,
-            only_one=True,
-            invert=False,
-            input_image=get_value_at_index(loadimage_259, 0),
+
+        yolov8_detect_152 = yolov8_detect.yolo_detect(
+            yolo_model="face_yolov8m-seg_60.pt",
+            mask_merge="all",
+            conf_threshold=0.25,
+            image=get_value_at_index(loadimage_259, 0),
         )
+
         focuscropultra_252 = focuscropultra_node.crop_by_mask_v2(
             up_keep=0.3,
             down_keep=0.3,
@@ -256,7 +255,7 @@ class qwen_2511_faceswap:
             expand=0,
             blur_radius=0,
             image=get_value_at_index(loadimage_259, 0),
-            mask=get_value_at_index(facedetector_250, 1),
+            mask=get_value_at_index(yolov8_detect_152, 0),
         )
         vaeencode_91 = vaeencode_node.encode(
             pixels=get_value_at_index(focuscropultra_252, 3),
@@ -270,13 +269,14 @@ class qwen_2511_faceswap:
             strength=1, model=get_value_at_index(modelsamplingauraflow_2, 0)
         )
 
-        facedetector_108 = facedetector_node.call(
-            fit="all",
-            expand_rate=0.5,
-            only_one=True,
-            invert=False,
-            input_image=get_value_at_index(loadimage_68, 0),
+
+        yolov8_detect_153 = yolov8_detect.yolo_detect(
+            yolo_model="face_yolov8m-seg_60.pt",
+            mask_merge="all",
+            conf_threshold=0.25,
+            image=get_value_at_index(loadimage_68, 0),
         )
+
         focuscropultra_137 = focuscropultra_node.crop_by_mask_v2(
             up_keep=0.2,
             down_keep=0.1,
@@ -293,7 +293,7 @@ class qwen_2511_faceswap:
             expand=0,
             blur_radius=0,
             image=get_value_at_index(loadimage_68, 0),
-            mask=get_value_at_index(facedetector_108, 1),
+            mask=get_value_at_index(yolov8_detect_153, 0),
         )
         emptyimagepro_143 = emptyimagepro_node.generate(
             batch_size=1,

@@ -152,13 +152,13 @@ class qwen_change_sight:
 
         loraloadermodelonly = NODE_CLASS_MAPPINGS["LoraLoaderModelOnly"]()
         self.loraloadermodelonly_22 = loraloadermodelonly.load_lora_model_only(
-            lora_name="Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors",
+            lora_name="qwen/Qwen-Image-Edit-2511-Lightning-8steps-V1.0-fp32.safetensors",
             strength_model=1,
             model=get_value_at_index(self.unetloader_21, 0),
         )
 
         self.loraloadermodelonly_23 = loraloadermodelonly.load_lora_model_only(
-            lora_name="qwen-image-edit-2511-multiple-angles-lora.safetensors",
+            lora_name="qwen/qwen-image-edit-2511-multiple-angles-lora.safetensors",
             strength_model=1,
             model=get_value_at_index(self.loraloadermodelonly_22, 0),
         )

@@ -161,15 +161,16 @@ class qwen_edit_2509_pose_cb:
             device="default",
         )
         self.vaeloader_86 = NODE_CLASS_MAPPINGS["VAELoader"]().load_vae(vae_name="qwen_image_vae.safetensors")
-        self.unetloadergguf = NODE_CLASS_MAPPINGS["UnetLoaderGGUF"]()
-        self.unetloadergguf_89 = self.unetloadergguf.load_unet(
-            unet_name="Qwen-Image-Edit-2509-Q8_0.gguf"
+    
+        self.unetloader_90 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
+            unet_name="qwen/qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+            weight_dtype="fp8_e4m3fn",
         )
         self.loraloadermodelonly = NODE_CLASS_MAPPINGS["LoraLoaderModelOnly"]()
         self.loraloadermodelonly_22 = self.loraloadermodelonly.load_lora_model_only(
             lora_name="qwen/Qwen-Image-Edit-2509-Lightning-8steps-V1.0-fp32.safetensors",
             strength_model=1,
-            model=get_value_at_index(self.unetloadergguf_89, 0),
+            model=get_value_at_index(self.unetloader_90, 0),
         )
         self.modelsamplingauraflow = NODE_CLASS_MAPPINGS["ModelSamplingAuraFlow"]()
         self.modelsamplingauraflow_54 = self.modelsamplingauraflow.patch_aura(

@@ -155,7 +155,7 @@ class Zimage_text2img:
             device="default",
         )
         self.unetloader_89 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
-            unet_name="z_image_turbo_bf16.safetensors", weight_dtype="default"
+            unet_name="Z-image/z_image_turbo_bf16.safetensors", weight_dtype="default"
         )
 
     @torch.inference_mode()

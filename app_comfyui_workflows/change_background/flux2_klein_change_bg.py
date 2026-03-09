@@ -164,13 +164,13 @@ class flux2_klein_change_bg:
     def __init__(self):
         # 预加载模型，风格对齐 qwen_change_bg / flux2_klein_change_bg
         self.cliploader_88 = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
-            clip_name="split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors",
+            clip_name="qwen_3_8b_fp8mixed.safetensors",
             type="flux2",
             device="default",
         )
         self.vaeloader_86 = NODE_CLASS_MAPPINGS["VAELoader"]().load_vae(vae_name="flux2-vae.safetensors")
         self.unetloader_89 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
-            unet_name="flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
+            unet_name="flux/flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
         )
         self.loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
         self.loadimage.load_image = types.MethodType(

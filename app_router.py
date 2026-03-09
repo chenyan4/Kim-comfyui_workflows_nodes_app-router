@@ -503,75 +503,135 @@ def wan_vace_h_first_end_route():
 
 @app.route("/video_expand",methods=["POST"])
 def video_expand_route():
-    data_json=request.get_json() or {}
-    video_url=data_json.get("video_url",None)
-    expand_left=data_json.get("expand_left",160)
-    expand_top=data_json.get("expand_top",0)
-    expand_right=data_json.get("expand_right",160)
-    expand_bottom=data_json.get("expand_bottom",0)
-    width=data_json.get("width",480)
-    height=data_json.get("height",832)
-    fps=data_json.get("fps",24)
+    data_json = request.get_json() or {}
+    video_url = data_json.get("video_url", None)
+    # 兼容：如果没有提供本地路径/URL，而是直接上传 base64 视频，则先保存到 INPUT_VIDEO_DIR
+    video_b64 = data_json.get("video_b64") or data_json.get("video_base64") or data_json.get("video")
+    if (not video_url) and video_b64:
+        try:
+            video_url = save_base64_video_to_path(video_b64)
+        except Exception as e:
+            return jsonify({"error": f"保存上传视频失败: {e}"}), 400
+
+    expand_left = data_json.get("expand_left", 160)
+    expand_top = data_json.get("expand_top", 0)
+    expand_right = data_json.get("expand_right", 160)
+    expand_bottom = data_json.get("expand_bottom", 0)
+    width = data_json.get("width", 480)
+    height = data_json.get("height", 832)
+    fps = data_json.get("fps", 24)
 
     if video_url is None:
-        return jsonify({"error":"video_expand功能需要 video_url"})
-    processor=get_change_processor(VideoExpand)
-    res_video_url=processor.forward(video_url=video_url,expand_left=expand_left,expand_top=expand_top,expand_right=expand_right,expand_bottom=expand_bottom,width=width,height=height,fps=fps)
-    res_video_base64=video_path_to_base64(res_video_url)
-    return jsonify({"res_video":res_video_base64})
+        return jsonify({"error": "video_expand功能需要 video_url 或 base64 视频(video_b64/video_base64/video)"}), 400
+    processor = get_change_processor(VideoExpand)
+    res_video_url = processor.forward(
+        video_url=video_url,
+        expand_left=expand_left,
+        expand_top=expand_top,
+        expand_right=expand_right,
+        expand_bottom=expand_bottom,
+        width=width,
+        height=height,
+        fps=fps,
+    )
+    res_video_base64 = video_path_to_base64(res_video_url)
+    return jsonify({"res_video": res_video_base64})
 
 @app.route("/wan_vace_person_change_one",methods=["POST"])
 def wan_vace_person_change_one_route():
-    data_json=request.get_json() or {}
-    image_1=data_json.get("image_1",None)
-    image_2=data_json.get("image_2",None)
-    video_url=data_json.get("video_url",None)
-    width=data_json.get("width",576)
-    height=data_json.get("height",1024)
-    fps=data_json.get("fps",16)
+    data_json = request.get_json() or {}
+    image_1 = data_json.get("image_1", None)
+    image_2 = data_json.get("image_2", None)
+    video_url = data_json.get("video_url", None)
+    # 兼容 base64 视频
+    video_b64 = data_json.get("video_b64") or data_json.get("video_base64") or data_json.get("video")
+    if (not video_url) and video_b64:
+        try:
+            video_url = save_base64_video_to_path(video_b64)
+        except Exception as e:
+            return jsonify({"error": f"保存上传视频失败: {e}"}), 400
 
-    image_1_pil=base64_to_pil(image_1) if image_1 else None
-    image_2_pil=base64_to_pil(image_2) if image_2 else None
+    width = data_json.get("width", 576)
+    height = data_json.get("height", 1024)
+    fps = data_json.get("fps", 16)
+
+    image_1_pil = base64_to_pil(image_1) if image_1 else None
+    image_2_pil = base64_to_pil(image_2) if image_2 else None
     if image_1_pil is None or image_2_pil is None or video_url is None:
-        return jsonify({"error":"wan_vace_person_change_one功能需要 image_1,image_2,video_url"})
-    processor=get_change_processor(WanVacePersonChangeOne)
-    res_video_url=processor.forward(image_1=image_1_pil,image_2=image_2_pil,video_url=video_url,width=width,height=height,fps=fps)
-    res_video_base64=video_path_to_base64(res_video_url)
-    return jsonify({"res_video":res_video_base64})
+        return jsonify({"error": "wan_vace_person_change_one功能需要 image_1,image_2,video_url 或 base64 视频(video_b64/video_base64/video)"}), 400
+    processor = get_change_processor(WanVacePersonChangeOne)
+    res_video_url = processor.forward(
+        image_1=image_1_pil,
+        image_2=image_2_pil,
+        video_url=video_url,
+        width=width,
+        height=height,
+        fps=fps,
+    )
+    res_video_base64 = video_path_to_base64(res_video_url)
+    return jsonify({"res_video": res_video_base64})
 
 @app.route("/wan_vace_person_change_mix",methods=["POST"])
 def wan_vace_person_change_mix_route():
-    data_json=request.get_json() or {}
-    image_1=data_json.get("image_1",None)
-    video_url=data_json.get("video_url",None)
-    width=data_json.get("width",840)
-    height=data_json.get("height",1024)
-    fps=data_json.get("fps",16)
+    data_json = request.get_json() or {}
+    image_1 = data_json.get("image_1", None)
+    video_url = data_json.get("video_url", None)
+    # 兼容 base64 视频
+    video_b64 = data_json.get("video_b64") or data_json.get("video_base64") or data_json.get("video")
+    if (not video_url) and video_b64:
+        try:
+            video_url = save_base64_video_to_path(video_b64)
+        except Exception as e:
+            return jsonify({"error": f"保存上传视频失败: {e}"}), 400
 
-    image_1_pil=base64_to_pil(image_1) if image_1 else None
+    width = data_json.get("width", 840)
+    height = data_json.get("height", 1024)
+    fps = data_json.get("fps", 16)
+
+    image_1_pil = base64_to_pil(image_1) if image_1 else None
     if image_1_pil is None or video_url is None:
-        return jsonify({"error":"wan_vace_person_change_mix功能需要 image_1,video_url"})
-    processor=get_change_processor(WanVacePersonChangeMix)
-    res_video_url=processor.forward(image_1=image_1_pil,video_url=video_url,width=width,height=height,fps=fps)
-    res_video_base64=video_path_to_base64(res_video_url)
-    return jsonify({"res_video":res_video_base64})
+        return jsonify({"error": "wan_vace_person_change_mix功能需要 image_1,video_url 或 base64 视频(video_b64/video_base64/video)"}), 400
+    processor = get_change_processor(WanVacePersonChangeMix)
+    res_video_url = processor.forward(
+        image_1=image_1_pil,
+        video_url=video_url,
+        width=width,
+        height=height,
+        fps=fps,
+    )
+    res_video_base64 = video_path_to_base64(res_video_url)
+    return jsonify({"res_video": res_video_base64})
 
 @app.route("/wan_vace_pose_change",methods=["POST"])
 def wan_vace_pose_change_route():
-    data_json=request.get_json() or {}
-    image_1=data_json.get("image_1",None)
-    video_url=data_json.get("video_url",None)
-    width=data_json.get("width",576)
-    height=data_json.get("height",1024)
-    fps=data_json.get("fps",16)
+    data_json = request.get_json() or {}
+    image_1 = data_json.get("image_1", None)
+    video_url = data_json.get("video_url", None)
+    # 兼容 base64 视频
+    video_b64 = data_json.get("video_b64") or data_json.get("video_base64") or data_json.get("video")
+    if (not video_url) and video_b64:
+        try:
+            video_url = save_base64_video_to_path(video_b64)
+        except Exception as e:
+            return jsonify({"error": f"保存上传视频失败: {e}"}), 400
 
-    image_1_pil=base64_to_pil(image_1) if image_1 else None
+    width = data_json.get("width", 576)
+    height = data_json.get("height", 1024)
+    fps = data_json.get("fps", 16)
+
+    image_1_pil = base64_to_pil(image_1) if image_1 else None
     if image_1_pil is None or video_url is None:
-        return jsonify({"error":"wan_vace_pose_change功能需要 image_1,video_url"})
-    processor=get_change_processor(WanVacePoseChange)
-    res_video_url=processor.forward(image_1=image_1_pil,video_url=video_url,width=width,height=height,fps=fps)
-    res_video_base64=video_path_to_base64(res_video_url)
-    return jsonify({"res_video":res_video_base64})
+        return jsonify({"error": "wan_vace_pose_change功能需要 image_1,video_url 或 base64 视频(video_b64/video_base64/video)"}), 400
+    processor = get_change_processor(WanVacePoseChange)
+    res_video_url = processor.forward(
+        image_1=image_1_pil,
+        video_url=video_url,
+        width=width,
+        height=height,
+        fps=fps,
+    )
+    res_video_base64 = video_path_to_base64(res_video_url)
+    return jsonify({"res_video": res_video_base64})
 
 if __name__ == "__main__":
     print("模型已就绪，启动服务...")

@@ -174,7 +174,7 @@ class WanVacePersonChangeMix:
             block_swap_debug=False,
         )
         self.textencodecached = wanvideotextencodecached_node.process(
-            model_name="text_encoders/umt5-xxl-enc-fp8_e4m3fn.safetensors",
+            model_name="umt5-xxl-enc-fp8_e4m3fn.safetensors",
             precision="bf16",
             positive_prompt="",
             negative_prompt=DEFAULT_NEGATIVE_PROMPT,
@@ -192,15 +192,15 @@ class WanVacePersonChangeMix:
             unload_on_finish=True,
         )
         self.lora = wanvideoloraselectmulti_node.getlorapath(
-            lora_0="WanAnimate_relight_lora_fp16.safetensors",
+            lora_0="Wan2.2/WanAnimate_relight_lora_fp16.safetensors",
             strength_0=1,
-            lora_1="Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors",
+            lora_1="Wan2.2/Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors",
             strength_1=1,
             lora_2="FastWan/FastWan_T2V_14B_480p_lora_rank_128_bf16.safetensors",
             strength_2=1,
             lora_3="Pusa/Wan21_PusaV1_LoRA_14B_rank512_bf16.safetensors",
             strength_3=1,
-            lora_4="Wan2.2-Fun-A14B-InP-LOW-HPS2.1_resized_dynamic_avg_rank_15_bf16.safetensors",
+            lora_4="Wan2.2/Wan2.2-Fun-A14B-InP-LOW-HPS2.1_resized_dynamic_avg_rank_15_bf16.safetensors",
             strength_4=0.5,
             low_mem_load=False,
             merge_loras=False,

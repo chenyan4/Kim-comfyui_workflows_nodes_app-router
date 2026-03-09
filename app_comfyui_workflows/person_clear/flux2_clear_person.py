@@ -153,10 +153,10 @@ class flux2_clear_person:
 
         # 预加载模型，风格对齐
         self.unetloader_46 = NODE_CLASS_MAPPINGS["UNETLoader"]().load_unet(
-            unet_name="flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
+            unet_name="flux/flux-2-klein-9b-fp8.safetensors", weight_dtype="default"
         )
         self.cliploader_49 = NODE_CLASS_MAPPINGS["CLIPLoader"]().load_clip(
-            clip_name="split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors",
+            clip_name="qwen_3_8b_fp8mixed.safetensors",
             type="flux2",
             device="default",
         )
@@ -191,7 +191,7 @@ class flux2_clear_person:
             method="lanczos",
             round_to_multiple="8",
             scale_to_side="longest",
-            scale_to_length=1536,
+            scale_to_length=1024,
             background_color="#000000",
             image=get_value_at_index(loadimage_24, 0),
             mask=get_value_at_index(imagetomask_63, 0),
